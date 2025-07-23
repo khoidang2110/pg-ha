@@ -24,7 +24,7 @@ services:
           memory: 512M
 
   patroni1:
-    image: registry.opensource.zalan.do/acid/patroni:2.1
+    image: local/patroni
     container_name: patroni1
     restart: always
     environment:
@@ -48,7 +48,7 @@ services:
           memory: 512M
 
   patroni2:
-    image: registry.opensource.zalan.do/acid/patroni:2.1
+    image: local/patroni
     container_name: patroni2
     restart: always
     environment:
@@ -72,7 +72,7 @@ services:
           memory: 512M
 
   patroni3:
-    image: registry.opensource.zalan.do/acid/patroni:2.1
+    image: local/patroni
     container_name: patroni3
     restart: always
     environment:
