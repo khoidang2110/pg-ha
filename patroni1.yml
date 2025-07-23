@@ -1,0 +1,26 @@
+scope: pg-ha
+name: patroni1
+
+restapi:
+  listen: 0.0.0.0:8008
+  connect_address: patroni1:8008
+
+etcd:
+  host: etcd:2379
+
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: patroni1:5432
+  data_dir: /home/postgres/data
+  authentication:
+    superuser:
+      username: postgres
+      password: 123
+    replication:
+      username: replicator
+      password: rep-pass
+  parameters:
+    wal_level: replica
+    hot_standby: "on"
+    max_wal_senders: 10
+    max_replication_slots: 10
