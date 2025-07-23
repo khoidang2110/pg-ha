@@ -2,128 +2,82 @@ version: '3.8'
 
 services:
   etcd:
-    image: quay.io/coreos/etcd:v3.5.12
+    image: quay.io/coreos/etcd:latest
     container_name: etcd
-    restart: always
     environment:
-      ETCD_NAME: "etcd0"
-      ETCD_DATA_DIR: "/etcd-data"
-      ALLOW_NONE_AUTHENTICATION: "yes"
-      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
-      ETCD_ADVERTISE_CLIENT_URLS: "http://etcd:2379"
-      ETCD_ENABLE_V2: "true"
-    volumes:
-      - etcd-data:/etcd-data
-    networks:
-      - pg_ha_net
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_ADVERTISE_PEER_URLS=http://etcd:2380
     ports:
-      - 2379:2379
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
+      - "2379:2379"
+      - "2380:2380"
+    volumes:
+      - etcd_data:/etcd_data
+    networks:
+      - patroni_network
 
-  patroni1:
-    image: local/patroni
-    container_name: patroni1
-    restart: always
+  postgres1:
+    image: postgres:15
+    container_name: postgres1
     environment:
-      PATRONI_NAME: patroni1
-      PATRONI_SCOPE: pg-ha
-      PATRONI_REST_API_LISTEN: 0.0.0.0:8008
-      PATRONI_ETCD_HOSTS: etcd:2379
-      PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
-      PATRONI_POSTGRESQL_PASSWORD: 123
-      PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=yourpassword
+      - POSTGRES_DB=mydb
     volumes:
-      - patroni1-data:/home/postgres/data
-      - ./patroni1.yml:/config.yml
-    command: patroni /config.yml
+      - ./patroni1.yml:/etc/patroni.yml
+      - postgres1_data:/var/lib/postgresql/data
+    depends_on:
+      - etcd
+    command: >
+      /bin/bash -c "
+      apt-get update && apt-get install -y python3 python3-pip &&
+      pip3 install patroni[etcd] &&
+      patroni /etc/patroni.yml
+      "
     networks:
-      - pg_ha_net
-    ports:
-      - 5433:5432
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
+      - patroni_network
 
-  patroni2:
-    image: local/patroni
-    container_name: patroni2
-    restart: always
+  postgres2:
+    image: postgres:15
+    container_name: postgres2
     environment:
-      PATRONI_NAME: patroni2
-      PATRONI_SCOPE: pg-ha
-      PATRONI_REST_API_LISTEN: 0.0.0.0:8008
-      PATRONI_ETCD_HOSTS: etcd:2379
-      PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
-      PATRONI_POSTGRESQL_PASSWORD: 123
-      PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=yourpassword
+      - POSTGRES_DB=mydb
     volumes:
-      - patroni2-data:/home/postgres/data
-      - ./patroni2.yml:/config.yml
-    command: patroni /config.yml
+      - ./patroni2.yml:/etc/patroni.yml
+      - postgres2_data:/var/lib/postgresql/data
+    depends_on:
+      - etcd
+    command: >
+      /bin/bash -c "
+      apt-get update && apt-get install -y python3 python3-pip &&
+      pip3 install patroni[etcd] &&
+      patroni /etc/patroni.yml
+      "
     networks:
-      - pg_ha_net
-    ports:
-      - 5434:5432
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-
-  patroni3:
-    image: local/patroni
-    container_name: patroni3
-    restart: always
-    environment:
-      PATRONI_NAME: patroni3
-      PATRONI_SCOPE: pg-ha
-      PATRONI_REST_API_LISTEN: 0.0.0.0:8008
-      PATRONI_ETCD_HOSTS: etcd:2379
-      PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
-      PATRONI_POSTGRESQL_PASSWORD: 123
-      PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
-    volumes:
-      - patroni3-data:/home/postgres/data
-      - ./patroni3.yml:/config.yml
-    command: patroni /config.yml
-    networks:
-      - pg_ha_net
-    ports:
-      - 5435:5432
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
+      - patroni_network
 
   haproxy:
     image: haproxy:latest
     container_name: haproxy
-    restart: always
     volumes:
-      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     ports:
-      - "5000:5000" # SELECT / read
-      - "5001:5001" # write
-    networks:
-      - pg_ha_net
+      - "5432:5432"
+      - "5000:5000"
     depends_on:
-      - patroni1
-      - patroni2
-      - patroni3
+      - postgres1
+      - postgres2
+    networks:
+      - patroni_network
 
 volumes:
-  etcd-data:
-  patroni1-data:
-  patroni2-data:
-  patroni3-data:
+  etcd_data:
+  postgres1_data:
+  postgres2_data:
 
 networks:
-  pg_ha_net:
+  patroni_network:
     driver: bridge
