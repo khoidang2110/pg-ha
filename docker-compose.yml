@@ -64,6 +64,8 @@ services:
     ports:
       - "5432:5432"
       - "5000:5000"
+      - "5000:5000"  # Patroni API
+      - "8404:8404"  # Stats page
     depends_on:
       - postgres1
       - postgres2
