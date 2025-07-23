@@ -15,10 +15,10 @@ postgresql:
   authentication:
     superuser:
       username: postgres
-      password: 123
+      password: "1234"
     replication:
       username: replicator
-      password: rep-pass
+      password: "rep-pass"
   parameters:
     wal_level: replica
     hot_standby: "on"
@@ -38,8 +38,8 @@ bootstrap:
     - data-checksums
   users:
     postgres:
-      password: 123
+      password: "1234"
     replicator:
-      password: rep-pass
+      password: "rep-pass"
       options:
         - replication
