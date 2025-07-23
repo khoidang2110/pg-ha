@@ -15,10 +15,10 @@ RUN /patroni-venv/bin/pip install --upgrade pip
 RUN /patroni-venv/bin/pip install patroni[etcd] psycopg2-binary
 
 # Đảm bảo quyền cho thư mục dữ liệu
-RUN chown -R postgres:postgres /var/lib/postgresql
+RUN chown -R postgres:postgres /var/lib/postgresql && chmod -R 0700 /var/lib/postgresql
 
 # Chuyển sang user postgres
 USER postgres
 
-# Đặt lệnh chạy Patroni qua shell
-CMD /bin/sh -c "/patroni-venv/bin/pip install --upgrade pip && /patroni-venv/bin/pip install patroni[etcd] psycopg2-binary && /patroni-venv/bin/patroni /etc/patroni.yml"
+# Đặt lệnh chạy Patroni
+CMD /patroni-venv/bin/patroni /etc/patroni.yml
