@@ -11,7 +11,7 @@ services:
       ALLOW_NONE_AUTHENTICATION: "yes"
       ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
       ETCD_ADVERTISE_CLIENT_URLS: "http://etcd:2379"
-      ETCD_ENABLE_V2: "true"   # ✅ Dòng này phải nằm ngang hàng với các dòng trên
+      ETCD_ENABLE_V2: "true"
     volumes:
       - etcd-data:/etcd-data
     networks:
@@ -36,7 +36,7 @@ services:
       PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
       PATRONI_POSTGRESQL_PASSWORD: 123
       PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
-     volumes:
+    volumes:
       - patroni1-data:/home/postgres/data
       - ./patroni1.yml:/config.yml
     command: patroni /config.yml
@@ -62,7 +62,7 @@ services:
       PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
       PATRONI_POSTGRESQL_PASSWORD: 123
       PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
-   volumes:
+    volumes:
       - patroni2-data:/home/postgres/data
       - ./patroni2.yml:/config.yml
     command: patroni /config.yml
@@ -88,7 +88,7 @@ services:
       PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
       PATRONI_POSTGRESQL_PASSWORD: 123
       PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
-      volumes:
+    volumes:
       - patroni3-data:/home/postgres/data
       - ./patroni3.yml:/config.yml
     command: patroni /config.yml
