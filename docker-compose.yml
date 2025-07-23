@@ -36,8 +36,10 @@ services:
       PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
       PATRONI_POSTGRESQL_PASSWORD: 123
       PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
-    volumes:
+     volumes:
       - patroni1-data:/home/postgres/data
+      - ./patroni1.yml:/config.yml
+    command: patroni /config.yml
     networks:
       - pg_ha_net
     ports:
@@ -60,8 +62,10 @@ services:
       PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
       PATRONI_POSTGRESQL_PASSWORD: 123
       PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
-    volumes:
+   volumes:
       - patroni2-data:/home/postgres/data
+      - ./patroni2.yml:/config.yml
+    command: patroni /config.yml
     networks:
       - pg_ha_net
     ports:
@@ -84,8 +88,10 @@ services:
       PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
       PATRONI_POSTGRESQL_PASSWORD: 123
       PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
-    volumes:
+      volumes:
       - patroni3-data:/home/postgres/data
+      - ./patroni3.yml:/config.yml
+    command: patroni /config.yml
     networks:
       - pg_ha_net
     ports:
