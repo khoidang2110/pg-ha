@@ -23,7 +23,9 @@ services:
       - patroni_network
 
   postgres1:
-    image: postgres:15
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: postgres1
     environment:
       - POSTGRES_USER=postgres
@@ -34,17 +36,13 @@ services:
       - postgres1_data:/var/lib/postgresql/data
     depends_on:
       - etcd
-    command: >
-      /bin/bash -c "
-      apt-get update && apt-get install -y python3 python3-pip &&
-      pip3 install patroni[etcd] &&
-      patroni /etc/patroni.yml
-      "
     networks:
       - patroni_network
 
   postgres2:
-    image: postgres:15
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: postgres2
     environment:
       - POSTGRES_USER=postgres
@@ -55,12 +53,6 @@ services:
       - postgres2_data:/var/lib/postgresql/data
     depends_on:
       - etcd
-    command: >
-      /bin/bash -c "
-      apt-get update && apt-get install -y python3 python3-pip &&
-      pip3 install patroni[etcd] &&
-      patroni /etc/patroni.yml
-      "
     networks:
       - patroni_network
 
