@@ -21,4 +21,4 @@ RUN chown -R postgres:postgres /var/lib/postgresql
 USER postgres
 
 # Đặt lệnh chạy Patroni
-CMD ["/patroni-venv/bin/patroni", "/etc/patroni.yml"]
+CMD ["/patroni-venv/bin/pip", "install", "--upgrade", "pip", "&&", "/patroni-venv/bin/pip", "install", "patroni[etcd]", "psycopg2-binary", "&&", "/patroni-venv/bin/patroni", "/etc/patroni.yml"]
