@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.12
+    container_name: etcd
+    restart: always
+    environment:
+      ETCD_NAME: "etcd0"
+      ETCD_DATA_DIR: "/etcd-data"
+      ALLOW_NONE_AUTHENTICATION: "yes"
+      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+      ETCD_ADVERTISE_CLIENT_URLS: "http://etcd:2379"
+    volumes:
+      - etcd-data:/etcd-data
+    networks:
+      - pg_ha_net
+    ports:
+      - 2379:2379
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  patroni1:
+    image: ghcr.io/zalando/patroni:latest
+    container_name: patroni1
+    restart: always
+    environment:
+      PATRONI_NAME: patroni1
+      PATRONI_SCOPE: pg-ha
+      PATRONI_REST_API_LISTEN: 0.0.0.0:8008
+      PATRONI_ETCD_HOSTS: etcd:2379
+      PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
+      PATRONI_POSTGRESQL_PASSWORD: 123
+      PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
+    volumes:
+      - patroni1-data:/home/postgres/data
+    networks:
+      - pg_ha_net
+    ports:
+      - 5433:5432
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  patroni2:
+    image: ghcr.io/zalando/patroni:latest
+    container_name: patroni2
+    restart: always
+    environment:
+      PATRONI_NAME: patroni2
+      PATRONI_SCOPE: pg-ha
+      PATRONI_REST_API_LISTEN: 0.0.0.0:8008
+      PATRONI_ETCD_HOSTS: etcd:2379
+      PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
+      PATRONI_POSTGRESQL_PASSWORD: 123
+      PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
+    volumes:
+      - patroni2-data:/home/postgres/data
+    networks:
+      - pg_ha_net
+    ports:
+      - 5434:5432
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  patroni3:
+    image: ghcr.io/zalando/patroni:latest
+    container_name: patroni3
+    restart: always
+    environment:
+      PATRONI_NAME: patroni3
+      PATRONI_SCOPE: pg-ha
+      PATRONI_REST_API_LISTEN: 0.0.0.0:8008
+      PATRONI_ETCD_HOSTS: etcd:2379
+      PATRONI_POSTGRESQL_DATA_DIR: /home/postgres/data
+      PATRONI_POSTGRESQL_PASSWORD: 123
+      PATRONI_POSTGRESQL_LISTEN: 0.0.0.0:5432
+    volumes:
+      - patroni3-data:/home/postgres/data
+    networks:
+      - pg_ha_net
+    ports:
+      - 5435:5432
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  haproxy:
+    image: haproxy:latest
+    container_name: haproxy
+    restart: always
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    ports:
+      - "5000:5000" # SELECT / read
+      - "5001:5001" # write
+    networks:
+      - pg_ha_net
+    depends_on:
+      - patroni1
+      - patroni2
+      - patroni3
+
+volumes:
+  etcd-data:
+  patroni1-data:
+  patroni2-data:
+  patroni3-data:
+
+networks:
+  pg_ha_net:
+    driver: bridge
