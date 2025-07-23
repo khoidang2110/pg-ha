@@ -18,8 +18,10 @@ bootstrap:
       use_pg_rewind: true
       use_slots: true
       parameters:
-        max_connections: 100
-        max_prepared_transactions: 0
+        max_connections: 200
+        shared_buffers: 512MB
+        work_mem: 16MB
+        effective_cache_size: 1536MB
         wal_level: replica
         hot_standby: "on"
         max_replication_slots: 10
