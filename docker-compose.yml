@@ -54,6 +54,22 @@ services:
       - etcd
     networks:
       - patroni_network
+  postgres3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: postgres3
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=yourpassword
+      - POSTGRES_DB=mydb
+    volumes:
+      - ./patroni3.yml:/etc/patroni.yml
+      - postgres3_data:/var/lib/postgresql/data
+    depends_on:
+      - etcd
+    networks:
+      - patroni_network
 
   haproxy:
     image: haproxy:latest
@@ -68,6 +84,7 @@ services:
     depends_on:
       - postgres1
       - postgres2
+      - postgres3
     networks:
       - patroni_network
 
@@ -75,6 +92,7 @@ volumes:
   etcd_data:
   postgres1_data:
   postgres2_data:
+  postgres3_data:
 
 networks:
   patroni_network:
